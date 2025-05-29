@@ -34,7 +34,6 @@ function mainMenu()
     end
 end
 
-
 -- Submenu for Infantry category
 function infantryMenu()
     local menuText = boxTitle("🪖 Infantry Submenu")
@@ -46,18 +45,17 @@ function infantryMenu()
     }, nil, menuText)
 
     if menu == 1 then
-        modifyUnit("Light Infantry", "80;0;0::9")
+        modifyUnit("Light Infantry", "80D;0D;0D~0D::9", {-14, 4, 8})
     elseif menu == 2 then
-        modifyUnit("Assault Infantry", "320;80;8::9")
+        modifyUnit("Assault Infantry", "320;80;8::9", {-14, 4, 8})
     elseif menu == 3 then
-        modifyUnit("Motorized Infantry", "200;60;6::9") -- TODO: Replace with actual pattern
+        modifyUnit("Motorized Infantry", "200;60;6::9", {-14, 4, 8})
     elseif menu == 4 then
-        modifyUnit("Mechanized Infantry", "400;100;10::9") -- TODO: Replace with actual pattern
+        modifyUnit("Mechanized Infantry", "400;100;10::9", {-14, 4, 8})
     elseif menu == nil then
         mainMenu()
     end
 end
-
 
 -- Tank Category
 function tankMenu()
@@ -71,20 +69,19 @@ function tankMenu()
     }, nil, menuText)
 
     if menu == 1 then
-        modifyUnit("Armored Car", "150;30;5::9") -- TODO: Replace with actual pattern
+        modifyUnit("Armored Car", "150;30;5::9", {-14, 4, 8})
     elseif menu == 2 then
-        modifyUnit("Light Tank", "300;60;6::9") -- TODO: Replace with actual pattern
+        modifyUnit("Light Tank", "300;60;6::9", {-14, 4, 8})
     elseif menu == 3 then
-        modifyUnit("Medium Tank", "500;100;10::9") -- TODO: Replace with actual pattern
+        modifyUnit("Medium Tank", "500;100;10::9", {-14, 4, 8})
     elseif menu == 4 then
-        modifyUnit("Heavy Tank", "750;150;15::9") -- TODO: Replace with actual pattern
+        modifyUnit("Heavy Tank", "750;150;15::9", {-14, 4, 8})
     elseif menu == 5 then
-        modifyUnit("Super Tank", "1000;200;20::9") -- TODO: Replace with actual pattern
+        modifyUnit("Super Tank", "1000;200;20::9", {-14, 4, 8})
     elseif menu == nil then
         mainMenu()
     end
 end
-
 
 -- Submenu for Artillery category
 function artilleryMenu()
@@ -97,28 +94,27 @@ function artilleryMenu()
     }, nil, menuText)
 
     if menu == 1 then
-        modifyUnit("Field Artillery", "180;40;5::9") -- TODO: Replace with actual pattern
+        modifyUnit("Field Artillery", "180;40;5::9", {-14, 4, 8})
     elseif menu == 2 then
-        modifyUnit("Howitzer", "300;70;7::9") -- TODO: Replace with actual pattern
+        modifyUnit("Howitzer", "300;70;7::9", {-14, 4, 8})
     elseif menu == 3 then
-        modifyUnit("Rocket Artillery", "245;45;8::9")
+        modifyUnit("Rocket Artillery", "245;45;8::9", {-14, 4, 8})
     elseif menu == 4 then
-        modifyUnit("Super Artillery", "600;120;12::9") -- TODO: Replace with actual pattern
+        modifyUnit("Super Artillery", "600;120;12::9", {-14, 4, 8})
     elseif menu == nil then
         mainMenu()
     end
 end
 
-
 -- Verify memory offsets
-function verifyOffsets(addr1, addr2, addr3)
+function verifyOffsets(addr1, addr2, addr3, expectedOffsets)
     local offset1 = addr2 - addr1
     local offset2 = addr3 - addr1
-    return (offset1 == 4) and (offset2 == 8)
+    return (offset1 == expectedOffsets[2] and offset2 == expectedOffsets[3])
 end
 
 -- Function to modify unit values
-function modifyUnit(name, searchPattern)
+function modifyUnit(name, searchPattern, expectedOffsets)
     gg.clearResults()
     gg.setRanges(gg.REGION_C_ALLOC)
     gg.searchNumber(searchPattern, gg.TYPE_DWORD)
@@ -135,7 +131,7 @@ function modifyUnit(name, searchPattern)
         local addr2 = results[i + 1].address
         local addr3 = results[i + 2].address
 
-        if verifyOffsets(addr1, addr2, addr3) then
+        if verifyOffsets(addr1, addr2, addr3, expectedOffsets) then
             table.insert(validGroups, {
                 { address = addr1, value = results[i].value },
                 { address = addr2, value = results[i + 1].value },
@@ -278,7 +274,6 @@ function restoreFromBackup()
 
     gg.setVisible(true)
 end
-
 
 -- Run the script
 mainMenu()
