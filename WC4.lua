@@ -12,7 +12,7 @@ end
 
 -- Main menu for WC4 Unit Modifier
 function mainMenu()
-    local menuText = boxTitle("⚔️  WC4 Unit Modifier Menu 1.0 ⚔️")
+    local menuText = boxTitle("⚔️  WC4 Unit Modifier Menu ⚔️")
     local menu = gg.choice({
         "🪖 Infantry",
         "🛡️ Tank",
@@ -45,7 +45,7 @@ function infantryMenu()
     }, nil, menuText)
 
     if menu == 1 then
-        modifyUnit("Light Infantry", "80D;0D;0D~0D::9", {-14, 4, 8})
+        modifyUnit("Light Infantry", "80D;0D;0D::9", {-14, 4, 8})
     elseif menu == 2 then
         modifyUnit("Assault Infantry", "320;80;8::9", {-14, 4, 8})
     elseif menu == 3 then
