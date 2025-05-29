@@ -12,7 +12,7 @@ end
 
 -- Main menu for WC4 Unit Modifier
 function mainMenu()
-    local menuText = boxTitle("⚔️  WC4 Unit Modifier Menu ⚔️")
+    local menuText = boxTitle("⚔️  WC4 Unit Modifier Menu ⚔️ 20:41")
     local menu = gg.choice({
         "🪖 Infantry",
         "🛡️ Tank",
@@ -45,7 +45,7 @@ function infantryMenu()
     }, nil, menuText)
 
     if menu == 1 then
-        modifyUnit("Light Infantry", "80D;0D;0D::9", {-14, 4, 8})
+        modifyUnit("Light Infantry", "80D;0D;0D~0D::9", {-14, 4, 8})
     elseif menu == 2 then
         modifyUnit("Assault Infantry", "320;80;8::9", {-14, 4, 8})
     elseif menu == 3 then
@@ -113,53 +113,7 @@ function verifyOffsets(addr1, addr2, addr3, expectedOffsets)
     return (offset1 == expectedOffsets[2] and offset2 == expectedOffsets[3])
 end
 
--- Test modification to verify it's the correct address
-function testModification(group, expectedOffsets)
-    -- Save original values
-    local originalValues = {}
-    for i, v in ipairs(group) do
-        originalValues[i] = {address = v.address, value = v.value, flags = gg.TYPE_DWORD}
-    end
-
-    -- Apply test modification
-    local testValue = 99999
-    local modified = {
-        {address = group[1].address, value = testValue, flags = gg.TYPE_DWORD},
-        {address = group[2].address, value = testValue, flags = gg.TYPE_DWORD},
-        {address = group[3].address, value = testValue, flags = gg.TYPE_DWORD}
-    }
-    gg.setValues(modified)
-
-    -- Verify the modification
-    gg.clearResults()
-    gg.searchNumber(testValue, gg.TYPE_DWORD)
-    local verifyResults = gg.getResults(3)
-    local success = true
-
-    if #verifyResults < 3 then
-        success = false
-    else
-        -- Check if all three addresses were modified
-        local foundAddresses = {}
-        for _, v in ipairs(verifyResults) do
-            foundAddresses[v.address] = true
-        end
-        
-        if not (foundAddresses[group[1].address] and 
-                foundAddresses[group[2].address] and 
-                foundAddresses[group[3].address]) then
-            success = false
-        end
-    end
-
-    -- Restore original values
-    gg.setValues(originalValues)
-    gg.clearResults()
-
-    return success
-end
-
--- Function to modify unit values with auto-verification
+-- Function to modify unit values
 function modifyUnit(name, searchPattern, expectedOffsets)
     gg.clearResults()
     gg.setRanges(gg.REGION_C_ALLOC)
@@ -191,28 +145,23 @@ function modifyUnit(name, searchPattern, expectedOffsets)
         return
     end
 
-    -- Auto-verification process for multiple matches
-    local verifiedGroup = nil
+    local selectedGroup = 1
     if #validGroups > 1 then
-        gg.toast("🔍 Found "..#validGroups.." groups. Verifying...")
-        
+        local choices = {}
         for i, group in ipairs(validGroups) do
-            if testModification(group, expectedOffsets) then
-                verifiedGroup = group
-                gg.toast("✅ Verified group "..i.." is correct")
-                break
-            else
-                gg.toast("❌ Group "..i.." failed verification")
-            end
+            table.insert(choices, string.format("Group %d:\n0x%X\n0x%X\n0x%X",
+                i, group[1].address, group[2].address, group[3].address))
         end
-        
-        if not verifiedGroup then
-            gg.alert(name..":\n❌ Couldn't verify any group automatically!\nTry manual selection.")
-            return manualGroupSelection(name, validGroups, expectedOffsets)
+
+        local choice = gg.choice(choices, nil, name .. ":\nMultiple matches found. Select group to modify:")
+        if not choice then
+            gg.alert("❗ Operation cancelled.")
+            return
         end
-    else
-        verifiedGroup = validGroups[1]
+        selectedGroup = choice
     end
+
+    local targetGroup = validGroups[selectedGroup]
 
     -- Save to backup file
     local dir = "/storage/emulated/0/Documents/"
@@ -220,10 +169,10 @@ function modifyUnit(name, searchPattern, expectedOffsets)
 
     local file = io.open(savePath, "w")
     if file then
-        file:write(string.format("Base Address: 0x%X\n", verifiedGroup[1].address))
-        file:write(string.format("%d at +0 (0x%X)\n", verifiedGroup[1].value, verifiedGroup[1].address))
-        file:write(string.format("%d at +4 (0x%X)\n", verifiedGroup[2].value, verifiedGroup[2].address))
-        file:write(string.format("%d at +8 (0x%X)\n", verifiedGroup[3].value, verifiedGroup[3].address))
+        file:write(string.format("Base Address: 0x%X\n", targetGroup[1].address))
+        file:write(string.format("%d at +0 (0x%X)\n", targetGroup[1].value, targetGroup[1].address))
+        file:write(string.format("%d at +4 (0x%X)\n", targetGroup[2].value, targetGroup[2].address))
+        file:write(string.format("%d at +8 (0x%X)\n", targetGroup[3].value, targetGroup[3].address))
         file:close()
         gg.toast("✅ Backup saved: " .. savePath)
     else
@@ -231,32 +180,16 @@ function modifyUnit(name, searchPattern, expectedOffsets)
     end
 
     local modified = {
-        { address = verifiedGroup[1].address, value = -9999, flags = gg.TYPE_DWORD },
-        { address = verifiedGroup[2].address, value = -9999, flags = gg.TYPE_DWORD },
-        { address = verifiedGroup[3].address, value = -9999, flags = gg.TYPE_DWORD }
+        { address = targetGroup[1].address, value = -9999, flags = gg.TYPE_DWORD },
+        { address = targetGroup[2].address, value = -9999, flags = gg.TYPE_DWORD },
+        { address = targetGroup[3].address, value = -9999, flags = gg.TYPE_DWORD }
     }
     gg.setValues(modified)
 
     gg.alert("✅ " .. name .. " values modified successfully!\nModified addresses:\n0x" ..
-        string.format("%X", verifiedGroup[1].address) .. "\n0x" ..
-        string.format("%X", verifiedGroup[2].address) .. "\n0x" ..
-        string.format("%X", verifiedGroup[3].address))
-end
-
-function manualGroupSelection(name, groups, expectedOffsets)
-    local choices = {}
-    for i, group in ipairs(groups) do
-        table.insert(choices, string.format("Group %d:\n0x%X\n0x%X\n0x%X",
-            i, group[1].address, group[2].address, group[3].address))
-    end
-
-    local choice = gg.choice(choices, nil, name .. ":\nMultiple matches found. Select group to modify:")
-    if not choice then
-        gg.alert("❗ Operation cancelled.")
-        return nil
-    end
-    
-    return groups[choice]
+        string.format("%X", targetGroup[1].address) .. "\n0x" ..
+        string.format("%X", targetGroup[2].address) .. "\n0x" ..
+        string.format("%X", targetGroup[3].address))
 end
 
 function restoreFromBackup()
