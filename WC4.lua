@@ -39,10 +39,10 @@ end
 function infantryMenu()
     local menuText = boxTitle("🪖 Infantry Submenu")
     local menu = gg.choice({
-        "👨‍✈️ Light Infantry",
-        "🪖 Assault Infantry",
-        "🚙 Motorized Infantry",
-        "🚛 Mechanized Infantry"
+        " Light Infantry",
+        " Assault Infantry",
+        " Motorized Infantry",
+        " Mechanized Infantry"
     }, nil, menuText)
 
     if menu == 1 then
@@ -63,11 +63,11 @@ end
 function tankMenu()
     local menuText = boxTitle("🛡️ Tank Submenu")
     local menu = gg.choice({
-        "🚗 Armored Car",
-        "🚙 Light Tank",
-        "🛻 Medium Tank",
-        "🚓 Heavy Tank",
-        "🚀 Super Tank"
+        " Armored Car",
+        " Light Tank",
+        " Medium Tank",
+        " Heavy Tank",
+        " Super Tank"
     }, nil, menuText)
 
     if menu == 1 then
@@ -90,10 +90,10 @@ end
 function artilleryMenu()
     local menuText = boxTitle("🎯 Artillery Submenu")
     local menu = gg.choice({
-        "🧨 Field Artillery",
-        "💣 Howitzer",
-        "🚀 Rocket Artillery",
-        "🔮 Super Artillery"
+        " Field Artillery",
+        " Howitzer",
+        " Rocket Artillery",
+        " Super Artillery"
     }, nil, menuText)
 
     if menu == 1 then
