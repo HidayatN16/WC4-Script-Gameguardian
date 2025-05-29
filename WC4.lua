@@ -12,7 +12,7 @@ end
 
 -- Main menu for WC4 Unit Modifier
 function mainMenu()
-    local menuText = boxTitle("⚔️  WC4 Unit Modifier Menu ⚔️")
+    local menuText = boxTitle("⚔️  WC4 Unit Modifier Menu 1.0 ⚔️")
     local menu = gg.choice({
         "🪖 Infantry",
         "🛡️ Tank",
